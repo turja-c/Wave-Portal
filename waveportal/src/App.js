@@ -8,6 +8,8 @@ const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const contractAddress = "0x1847D2f440B2778a3B9A5Fa58Cd5239ce4A7B797";
   const contractABI = abi.abi;
+  const [allWaves, setAllWaves] = useState([]);
+
 
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
@@ -80,7 +82,37 @@ const App = () => {
       console.log(error)
     }
   }
+  
+  const getAllWaves = async () => {
+    try {
+      const {ethereum} = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
+        /*
+         * Call the getAllWaves method from your Smart Contract
+         */
+        const waves = await wavePortalContract.getAllWaves();
+
+        let wavesCleaned = [];
+        waves.forEach(wave => {
+          wavesCleaned.push({
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message
+          });
+        });
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+      }
+    
   
   return (
     <div className="mainContainer">
@@ -90,7 +122,7 @@ const App = () => {
         </div>
 
         <div className="bio">
-          I am farza and I worked on self-driving cars so that's pretty cool right? Connect your Ethereum wallet and wave at me!
+          Connect your Ethereum wallet and wave at me!
         </div>
 
         <button className="waveButton" onClick={wave}>
